@@ -4,8 +4,6 @@ import android.app.Service
 import android.content.Intent
 import android.os.CountDownTimer
 import android.os.IBinder
-import android.service.controls.actions.CommandAction
-import androidx.core.app.NotificationManagerCompat
 
 class NotificationService: Service() {
 

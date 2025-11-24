@@ -4,9 +4,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -25,6 +30,7 @@ class NotificationActivity : AppCompatActivity() {
             intent: Intent?
         ) {
             val time = intent?.getIntExtra(NotificationService.EXTRA_TIME, NotificationService.timer)
+            Log.d("BroadCast", time.toString())
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     binding.tvTimer.text = time.toString()
@@ -49,11 +55,24 @@ class NotificationActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        val intent = IntentFilter(NotificationService.action)
-        registerReceiver(br, intent)
-        NotificationHelper.createNotificationChannel(context = this)
-        binding.tvTimer.text = "30"
+        initViews()
+        initPermission()
         clickListener()
+    }
+
+    private fun initViews() {
+        val intent = IntentFilter(NotificationService.action)
+        ContextCompat.registerReceiver(this , br, intent, ContextCompat.RECEIVER_EXPORTED)
+        NotificationHelper.createNotificationChannel(context = this)
+        binding.tvTimer.text = NotificationService.timer.toString()
+    }
+
+    private fun initPermission() {
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
     }
 
     private fun clickListener() {
